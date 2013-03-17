@@ -1,8 +1,11 @@
-require_relative 'LocSelect'
+puts "Please wait..."
+require_relative 'ApacheInfo'
 
-#file = open('./data/test.txt')
-file = open($configLoc)
-$stderr.puts "Scanning..."
+
+input = open($apache_config_loc,"r")
+output = open("new.conf","w")
+
+puts "Scanning..."
 
 config = {
 	"ServerSignature" => ["Off",0], # 0: This config not exist
@@ -29,13 +32,13 @@ def in_directory?(line)	#是否在目標目錄內
 	end
 end
 
-while line = file.gets
+while line = input.gets
 
 	
 	next if  /^\s+#/ =~ line # To Ignore commend ,equal to /^#/x:
 	next if in_directory?(line)	# in or out directory
 	if /^\s*$/ =~ line # 空白行
-		puts line
+		output.puts line
 		next
 	end
 
@@ -45,7 +48,7 @@ while line = file.gets
 
 	if lineKey == 'DocumentRoot' #將DocumentRoot存入$docRoot
 		$docRoot = lineVal 
-		#$stderr.puts $docRoot
+		#puts $docRoot
 	end
 
 	if config.has_key?(lineKey) #若line為欲測之設定
@@ -53,13 +56,13 @@ while line = file.gets
 			#value[1] is flag
 			if (lineKey.downcase == key.downcase)
 				if(lineVal.downcase == value[0].downcase)
-					$stderr.puts 'OK'
-					puts line
+					puts 'OK'
+					output.puts line
 					value[1] = 1
 				else
 					line = key + ' ' + value[0]
-					$stderr.puts "Set: "+ line
-					puts line
+					puts "Set: "+ line
+					output.puts line
 					value[1] = 1
 				end
 				break
@@ -68,23 +71,27 @@ while line = file.gets
 		}
 
 	else
-		puts line
+		output.puts line
 	end
 end
 
 config.each{ |key,value|
 	if value[1] == 0
 		line = key + ' ' + value[0]
-		puts line
-		$stderr.puts "Set: "+ line
+		output.puts line
+		puts "Set: "+ line
 	end
 }
 
-puts "RewriteCond %{HTTP:range} !(^bytes=[^,]+(,[^,]+){0,4}$|^$)"
-puts "RewriteRule .* - [F]"
+if $apache_version<=2.2
+	output.puts "RewriteCond %{HTTP:range} !(^bytes=[^,]+(,[^,]+){0,4}$|^$)"
+	output.puts "RewriteRule .* - [F]"
+end
 
-file.close
+input.close
+output.close
 
+system "pause"
 #'<directory"c:/programfiles/apachegroup/apache2/htdocs\">\n'
 #'<directory"c:/xampp/htdocs">'
 #dir c:\\ /s /b | find \"conf\\httpd.conf\"
