@@ -91,6 +91,9 @@ end
 input.close
 output.close
 
+puts "Scanning phpmyadmin..."
+require_relative 'PhpmyadminConf'
+
 system "pause"
 #'<directory"c:/programfiles/apachegroup/apache2/htdocs\">\n'
 #'<directory"c:/xampp/htdocs">'
